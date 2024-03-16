@@ -76,6 +76,7 @@ const userValidation = (req, res, next) => {
         })
 
         const { error } = Schema.validate(userInfo)
+        console.log(error)
         if (error) {
             return res.status(501).json({ error: error.details[0].message })
         }
