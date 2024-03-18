@@ -7,8 +7,6 @@ const RefrenceTokenModel = require('../models/refreshToken')
 
 const userRegister = async (req, res) => {
 
-    console.log("object")
-
     try {
         const {
             fname,
@@ -52,7 +50,7 @@ const userRegister = async (req, res) => {
 
         return res.status(201).json({ user });
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         return res.status(500).json({ error: 'Server Error' });
     }
 
@@ -73,7 +71,7 @@ const userLogin = async (req, res) => {
         if (!isMatch) {
             return res.status(200).send({ message: 'Invalid Email and password', success: false })
         }
-        console.log(req.body, "body data")
+        // console.log(req.body, "body data")
 
         const AccessToken = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' })
         const RefrenceToken = jwt.sign({ userId: user.id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '2d' })
@@ -90,7 +88,7 @@ const userLogin = async (req, res) => {
         // return res.status(200).send({ message: 'Login success', success: true, token })
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return res.status(500).send({ message: `Error in Login Form ${error.message}` })
     }
 }
@@ -99,10 +97,12 @@ const userList = async (req, res) => {
     try {
 
         const allUser = await User.findAll()
+        // console.log(allUser);
+        // return false
         return res.status(200).send({ message: "All user", allUser })
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return res.status(404).json({ message: "Does not fetch alluser" })
     }
 }
@@ -119,13 +119,12 @@ const getParticularUser = async (req, res) => {
 
         return res.status(200).send({ message: "particular user", user })
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).send('Internal Server Error');
     }
 }
 
 const deleteUser = async (req, res) => {
-    console.log("Delete user")
     try {
         const userId = req.params.id;
         const user = await User.findByPk(userId);
@@ -135,7 +134,7 @@ const deleteUser = async (req, res) => {
         await user.destroy();
         res.status(204).send({ message: "User delete successfully!" });
     } catch (error) {
-        console.error(error);
+        // console.error(error);
         res.status(500).send('Internal Server Error');
     }
 }
@@ -177,4 +176,46 @@ const updateProperty = async (req, res) => {
         return res.status(500).json({ error: 'Internal server error' });
     }
 }
-module.exports = { userRegister, userLogin, userList, getParticularUser, deleteUser, updateuser, updateProperty }
+
+
+const loginUserDetails = async (req, res) => {
+    try {
+
+
+
+        // const user = await User.findByPk(req.id);
+        const user = req.user;
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        return res.status(200).json({ message: "successdully find user", user });
+    } catch (err) {
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+}
+const loginUserUpdate = async (req, res) => {
+    try {
+        const user = req.user;
+        console.log(user, "userUpdate")
+
+        // get user details
+        const { fname, lname, city, state } = req.body
+
+        // Update user details
+        const updatedUser = await User.update(
+            { fname, lname, city, state },
+            {
+                where: { id: user.userId },
+                returning: true
+            });
+        if (updatedUser[0] === 0) {
+            return res.status(404).send({ message: "User not found" })
+        }
+        return res.status(200).send({ message: "User update successfully!" })
+        // res.json(updatedUser[1][0]); // Return the updated user details
+    } catch (err) {
+        res.status(500).send({ message: "Internal server error" })
+    }
+}
+module.exports = { userRegister, userLogin, userList, getParticularUser, deleteUser, updateuser, updateProperty, loginUserDetails, loginUserUpdate }

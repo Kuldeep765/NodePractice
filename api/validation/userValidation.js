@@ -56,10 +56,10 @@ const userValidation = (req, res, next) => {
                 .max(30)
                 .required(),
 
-            numbers: Object.keys({
-                numbers: Joi.number().max(10)
-            }),
-
+            // numbers: Object.keys({
+            //     numbers: Joi.number().max(10)
+            // }),
+            numbers: Joi.array().items(Joi.number()),
             // numbers: Joi.json()
             //     .max(10)
             //     .required(),
